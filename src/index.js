@@ -24,7 +24,7 @@ function installAllure() {
         execSync('sudo apt-get update && sudo apt-get install -y wget unzip openjdk-11-jre', { stdio: 'inherit' });
         const tmpDir = path.join(os.tmpdir(), 'allure');
         fs.ensureDirSync(tmpDir);
-        execSync(`wget -qO- https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip > ${tmpDir}/allure.zip`, { stdio: 'inherit' });
+        execSync(`wget -qO ${tmpDir}/allure.zip https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip`, { stdio: 'inherit' });
         execSync(`unzip -q -o ${tmpDir}/allure.zip -d ${tmpDir}`, { stdio: 'inherit' });
         const allurePath = path.join(tmpDir, 'allure-2.25.0', 'bin', 'allure');
         execSync(`chmod +x ${allurePath}`);
@@ -34,7 +34,6 @@ function installAllure() {
 
 (async () => {
     try {
-        console.log('Detecting OS...');
         const isWindows = os.platform() === 'win32';
         console.log(`Running on ${isWindows ? 'Windows' : 'Linux/macOS'}`);
 

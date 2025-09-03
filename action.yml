@@ -1,27 +1,24 @@
-name: "Allure Report with History"
-description: "Generate Allure reports with history and deploy to GitHub Pages"
-author: "Your Name <you@example.com>"
-branding:
-  icon: "graph"
-  color: "blue"
+name: 'Allure Report with History'
+description: 'Generates Allure report with historical results'
+author: "velychkod"
 runs:
-  using: "node16"
-  main: "dist/index.js"
+  using: 'node16'
+  main: 'dist/index.js'
 inputs:
   allure-results-source:
-    description: "Path to the Allure results directory"
+    description: 'Path to Allure results'
     required: true
   published-reports-branch:
-    description: "Branch where Allure reports will be published"
+    description: 'Branch to push Allure report'
     required: true
   reports-to-keep:
-    description: "How many historical reports to keep"
+    description: 'Number of historical reports to keep'
     required: false
-    default: "20"
+    default: '20'
   generate-index-html-with-reports-history:
-    description: "Generate an index.html with links to historical reports"
+    description: 'Generate index.html with report history'
     required: false
-    default: "true"
+    default: 'true'
   gh-pages-url:
-    description: "GitHub Pages URL to link the reports"
+    description: 'Optional URL to GitHub Pages for linking latest report'
     required: false
