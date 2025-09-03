@@ -13,7 +13,7 @@ const ghPagesUrl = core.getInput('gh-pages-url');
 
 const repo = github.context.repo.repo;
 const owner = github.context.repo.owner;
-const tempDir = path.join(process.cwd(), 'temp-allure-reports');
+const deployDir = path.join(process.cwd(), 'deploy-allure-reports');
 
 // Install Allure dynamically
 function installAllure() {
@@ -41,34 +41,34 @@ function installAllure() {
         const allureBinary = installAllure();
         console.log(`Using Allure binary: ${allureBinary}`);
 
-        // Generate new report
         console.log('Generating Allure report...');
         execFileSync(allureBinary, ['generate', allureResultsPath, '--clean', '-o', './allure-report'], { stdio: 'inherit' });
 
         if (!fs.existsSync('./allure-report')) throw new Error('Allure report generation failed.');
-
         console.log('Allure report generated successfully.');
 
         // Prepare deployment folder
-        fs.removeSync(tempDir);
-        fs.mkdirSync(tempDir);
+        fs.removeSync(deployDir);
+        fs.mkdirSync(deployDir);
 
-        // Clone branch with previous reports
-        console.log(`Cloning branch ${publishedBranch} to preserve history...`);
-        const tempHistoryDir = `${tempDir}-history`;
+        console.log(`Cloning branch ${publishedBranch}...`);
         execSync(
-            `git clone --single-branch --branch ${publishedBranch} https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${tempHistoryDir}`,
+            `git clone --single-branch --branch ${publishedBranch} https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${deployDir}`,
             { stdio: 'inherit' }
         );
 
-        // Copy old reports (up to reportsToKeep-1)
-        const oldReports = fs.readdirSync(tempHistoryDir, { withFileTypes: true })
+        // Keep previous reports (up to reportsToKeep - 1)
+        const oldReports = fs.readdirSync(deployDir, { withFileTypes: true })
             .filter(d => d.isDirectory() && /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/.test(d.name))
             .sort((a, b) => b.name.localeCompare(a.name))
             .slice(0, reportsToKeep - 1);
 
+        const tempDir = path.join(process.cwd(), 'temp-copy-reports');
+        fs.removeSync(tempDir);
+        fs.mkdirSync(tempDir);
+
         oldReports.forEach(report => {
-            fs.copySync(path.join(tempHistoryDir, report.name), path.join(tempDir, report.name));
+            fs.copySync(path.join(deployDir, report.name), path.join(tempDir, report.name));
         });
 
         // Add new report
@@ -102,20 +102,23 @@ ${links}
             fs.writeFileSync(path.join(tempDir, 'index.html'), html, 'utf8');
         }
 
-        // Deploy to branch
+        // Copy everything back to deployDir
+        fs.removeSync(deployDir);
+        fs.copySync(tempDir, deployDir);
+
+        // Commit and push
         console.log(`Deploying Allure report to branch ${publishedBranch}...`);
-        execSync('git init', { cwd: tempDir });
-        execSync('git config user.name "GitHub Actions"', { cwd: tempDir });
-        execSync('git config user.email "actions@github.com"', { cwd: tempDir });
-        execSync('git add .', { cwd: tempDir });
-        execSync(`git commit -m "Deployed Allure report by run ${github.context.runId}"`, { cwd: tempDir });
-        execSync(`git push -f https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git HEAD:${publishedBranch}`, { cwd: tempDir });
+        execSync('git config user.name "GitHub Actions"', { cwd: deployDir });
+        execSync('git config user.email "actions@github.com"', { cwd: deployDir });
+        execSync('git add .', { cwd: deployDir });
+        execSync(`git commit -m "Deployed Allure report by run ${github.context.runId}"`, { cwd: deployDir });
+        execSync(`git push https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git HEAD:${publishedBranch}`, { cwd: deployDir });
 
         console.log('Allure report deployed successfully.');
 
         // Add summary link
         if (ghPagesUrl) {
-            const reportDirs = fs.readdirSync(tempDir, { withFileTypes: true })
+            const reportDirs = fs.readdirSync(deployDir, { withFileTypes: true })
                 .filter(d => d.isDirectory() && /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/.test(d.name))
                 .sort((a, b) => b.name.localeCompare(a.name));
 
