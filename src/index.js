@@ -16,14 +16,8 @@ const tempDir = path.join(process.cwd(), 'temp-allure-reports');
 
 (async () => {
     try {
-        console.log('Detecting OS...');
         const isWindows = process.platform === 'win32';
-        console.log(`Running on ${isWindows ? 'Windows' : 'Linux/macOS'}`);
-
-        // Resolve allure binary path
-        const allureBinary = isWindows
-            ? path.join(__dirname, 'dist', 'allure.bat')
-            : path.join(__dirname, 'dist', 'allure');
+        const allureBinary = path.join(__dirname, isWindows ? 'allure.bat' : 'allure');
 
         if (!fs.existsSync(allureBinary)) {
             throw new Error(`Allure binary not found at expected path: ${allureBinary}`);
