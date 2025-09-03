@@ -1,35 +1,6 @@
-# Node dependencies
-node_modules
-dist
-*.log
-
-# NCC build output
+node_modules/
 dist/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# OS files
+npm-debug.log
 .DS_Store
-Thumbs.db
-
-# IDE / Editor files
-.vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Temporary files
-*.tmp
-*.temp
-
-# Allure report artifacts (should not be committed)
-allure-report/
-allure-results/
-allure-report-and-history/
-temp-allure-reports/
+.vscode/
