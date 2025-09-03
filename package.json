@@ -14,5 +14,8 @@
   },
   "engines": {
     "node": ">=16"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3"
   }
 }
