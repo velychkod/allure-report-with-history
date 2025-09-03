@@ -34603,7 +34603,6 @@ const repo = github.context.repo.repo;
 const owner = github.context.repo.owner;
 const deployDir = path.join(process.cwd(), 'deploy-allure-reports');
 
-// Install Allure dynamically
 function installAllure() {
     console.log('Installing Allure...');
     if (os.platform() === 'win32') {
@@ -34629,45 +34628,43 @@ function installAllure() {
         const allureBinary = installAllure();
         console.log(`Using Allure binary: ${allureBinary}`);
 
+        // Generate Allure report
         console.log('Generating Allure report...');
         execFileSync(allureBinary, ['generate', allureResultsPath, '--clean', '-o', './allure-report'], { stdio: 'inherit' });
 
         if (!fs.existsSync('./allure-report')) throw new Error('Allure report generation failed.');
         console.log('Allure report generated successfully.');
 
-        // Prepare deployment folder
-        fs.removeSync(deployDir);
-        fs.mkdirSync(deployDir);
-
+        // Clone branch with previous reports
         console.log(`Cloning branch ${publishedBranch}...`);
+        fs.removeSync(deployDir); // Remove old deployDir
         execSync(
             `git clone --single-branch --branch ${publishedBranch} https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${deployDir}`,
             { stdio: 'inherit' }
         );
 
-        // Keep previous reports (up to reportsToKeep - 1)
+        // Keep previous reports (up to reportsToKeep-1)
         const oldReports = fs.readdirSync(deployDir, { withFileTypes: true })
             .filter(d => d.isDirectory() && /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/.test(d.name))
             .sort((a, b) => b.name.localeCompare(a.name))
             .slice(0, reportsToKeep - 1);
 
-        const tempDir = path.join(process.cwd(), 'temp-copy-reports');
-        fs.removeSync(tempDir);
-        fs.mkdirSync(tempDir);
-
-        oldReports.forEach(report => {
-            fs.copySync(path.join(deployDir, report.name), path.join(tempDir, report.name));
+        // Remove all reports except oldReports (preserve .git)
+        fs.readdirSync(deployDir).forEach(item => {
+            if (!oldReports.find(r => r.name === item) && item !== '.git') {
+                fs.removeSync(path.join(deployDir, item));
+            }
         });
 
         // Add new report
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const newReportPath = path.join(tempDir, timestamp);
+        const newReportPath = path.join(deployDir, timestamp);
         fs.copySync('./allure-report', newReportPath);
 
         // Generate index.html
         if (generateIndexHtmlWithHistory) {
             console.log('Generating index.html...');
-            const reportDirs = fs.readdirSync(tempDir, { withFileTypes: true })
+            const reportDirs = fs.readdirSync(deployDir, { withFileTypes: true })
                 .filter(d => d.isDirectory() && /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/.test(d.name))
                 .sort((a, b) => b.name.localeCompare(a.name));
 
@@ -34687,14 +34684,10 @@ ${links}
 </ul>
 </body>
 </html>`;
-            fs.writeFileSync(path.join(tempDir, 'index.html'), html, 'utf8');
+            fs.writeFileSync(path.join(deployDir, 'index.html'), html, 'utf8');
         }
 
-        // Copy everything back to deployDir
-        fs.removeSync(deployDir);
-        fs.copySync(tempDir, deployDir);
-
-        // Commit and push
+        // Commit & push
         console.log(`Deploying Allure report to branch ${publishedBranch}...`);
         execSync('git config user.name "GitHub Actions"', { cwd: deployDir });
         execSync('git config user.email "actions@github.com"', { cwd: deployDir });
@@ -34722,6 +34715,7 @@ ${links}
 
     } catch (error) {
         core.setFailed(error.message);
+        console.error(error);
     }
 })();
 
