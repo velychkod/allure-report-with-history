@@ -1,6 +1,7 @@
 # Node dependencies
-node_modules/
-package-lock.json
+node_modules
+dist
+*.log
 
 # NCC build output
 dist/
