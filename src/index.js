@@ -2,8 +2,8 @@
 const github = require('@actions/github');
 const fs = require('fs-extra');
 const path = require('path');
-const { execFileSync, execSync } = require('child_process');
-const allure = require('allure-commandline');
+const { execSync, execFileSync } = require('child_process');
+const os = require('os');
 
 const allureResultsPath = core.getInput('allure-results-source', { required: true });
 const publishedBranch = core.getInput('published-reports-branch', { required: true });
@@ -15,11 +15,31 @@ const repo = github.context.repo.repo;
 const owner = github.context.repo.owner;
 const tempDir = path.join(process.cwd(), 'temp-allure-reports');
 
+function installAllure() {
+    console.log('Installing Allure...');
+    if (os.platform() === 'win32') {
+        execSync('choco install allure -y', { stdio: 'inherit' });
+        return 'allure'; // Windows will resolve from PATH
+    } else {
+        execSync('sudo apt-get update && sudo apt-get install -y wget unzip openjdk-11-jre', { stdio: 'inherit' });
+        const tmpDir = path.join(os.tmpdir(), 'allure');
+        fs.ensureDirSync(tmpDir);
+        execSync(`wget -qO- https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip > ${tmpDir}/allure.zip`, { stdio: 'inherit' });
+        execSync(`unzip -q -o ${tmpDir}/allure.zip -d ${tmpDir}`, { stdio: 'inherit' });
+        const allurePath = path.join(tmpDir, 'allure-2.25.0', 'bin', 'allure');
+        execSync(`chmod +x ${allurePath}`);
+        return allurePath;
+    }
+}
+
 (async () => {
     try {
-        // Use Allure binary from npm package
-        const allureBinary = allure.path;
-        if (!allureBinary) throw new Error('Allure binary not found. Ensure allure-commandline is installed.');
+        console.log('Detecting OS...');
+        const isWindows = os.platform() === 'win32';
+        console.log(`Running on ${isWindows ? 'Windows' : 'Linux/macOS'}`);
+
+        // Install Allure dynamically
+        const allureBinary = installAllure();
         console.log(`Using Allure binary: ${allureBinary}`);
 
         // Generate Allure report
