@@ -2,8 +2,8 @@
 const github = require('@actions/github');
 const fs = require('fs-extra');
 const path = require('path');
-const { execSync } = require('child_process');
-const allureCli = require('allure-commandline');
+const { execFileSync, execSync } = require('child_process');
+const allure = require('allure-commandline');
 
 const allureResultsPath = core.getInput('allure-results-source', { required: true });
 const publishedBranch = core.getInput('published-reports-branch', { required: true });
@@ -17,24 +17,40 @@ const tempDir = path.join(process.cwd(), 'temp-allure-reports');
 
 (async () => {
     try {
+        console.log('Detecting OS...');
+        const isWindows = process.platform === 'win32';
+        console.log(`Running on ${isWindows ? 'Windows' : 'Linux/macOS'}`);
+
+        // Detect correct allure binary
+        const allureBinary = isWindows ? `${allure.path}.bat` : allure.path;
+        console.log(`Using Allure binary: ${allureBinary}`);
+
+        // Generate the Allure report
         console.log('Generating Allure report...');
-        const generation = allureCli(['generate', allureResultsPath, '--clean', '-o', './allure-report']);
-        generation.on('exit', function (exitCode) {
-            if (exitCode !== 0) {
-                core.setFailed(`Allure generation failed with code ${exitCode}`);
-                return;
-            }
-            console.log('Allure report generated successfully');
+        execFileSync(allureBinary, ['generate', allureResultsPath, '--clean', '-o', './allure-report'], {
+            stdio: 'inherit',
         });
 
+        if (!fs.existsSync('./allure-report')) {
+            throw new Error('Allure report generation failed: ./allure-report directory not found.');
+        }
+
+        console.log('Allure report generated successfully.');
+
+        // Prepare deployment directory
         fs.removeSync(tempDir);
         fs.mkdirSync(tempDir);
         fs.copySync('./allure-report', tempDir);
 
+        // Preserve report history
         if (reportsToKeep > 0) {
-            console.log(`Cloning branch ${publishedBranch}...`);
+            console.log(`Cloning branch ${publishedBranch} to preserve history...`);
             const tempHistoryDir = `${tempDir}-history`;
-            execSync(`git clone --single-branch --branch ${publishedBranch} https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${tempHistoryDir}`);
+            execSync(
+                `git clone --single-branch --branch ${publishedBranch} https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git ${tempHistoryDir}`,
+                { stdio: 'inherit' }
+            );
+
             const historyPath = path.join(tempHistoryDir, 'history');
             if (fs.existsSync(historyPath)) {
                 fs.copySync(historyPath, path.join(tempDir, 'history'));
@@ -42,6 +58,7 @@ const tempDir = path.join(process.cwd(), 'temp-allure-reports');
             }
         }
 
+        // Archive reports if keeping multiple
         if (reportsToKeep > 0) {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const archivePath = path.join(tempDir, timestamp);
@@ -55,13 +72,18 @@ const tempDir = path.join(process.cwd(), 'temp-allure-reports');
             }
         }
 
+        // Create index.html with report archive links
         if (generateIndexHtmlWithHistory) {
             console.log('Generating index.html with reports history...');
             const indexFile = path.join(tempDir, 'index.html');
             const reportDirs = fs.readdirSync(tempDir, { withFileTypes: true })
                 .filter(dirent => dirent.isDirectory() && /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/.test(dirent.name))
                 .sort((a, b) => b.name.localeCompare(a.name));
-            const links = reportDirs.map(d => `<li><a href='./${d.name}/index.html' target='_blank'>Report from ${d.name}</a></li>`).join('\n');
+
+            const links = reportDirs
+                .map(d => `<li><a href='./${d.name}/index.html' target='_blank'>Report from ${d.name}</a></li>`)
+                .join('\n');
+
             const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,19 +101,25 @@ ${links}
             fs.writeFileSync(indexFile, html, 'utf8');
         }
 
+        // Deploy to the branch
         console.log(`Deploying Allure report to branch ${publishedBranch}...`);
-        execSync(`git init`, { cwd: tempDir });
-        execSync(`git config user.name "GitHub Actions"`, { cwd: tempDir });
-        execSync(`git config user.email "actions@github.com"`, { cwd: tempDir });
-        execSync(`git add .`, { cwd: tempDir });
+        execSync('git init', { cwd: tempDir });
+        execSync('git config user.name "GitHub Actions"', { cwd: tempDir });
+        execSync('git config user.email "actions@github.com"', { cwd: tempDir });
+        execSync('git add .', { cwd: tempDir });
         execSync(`git commit -m "Deployed Allure report by run ${github.context.runId}"`, { cwd: tempDir });
-        execSync(`git push -f https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git HEAD:${publishedBranch}`, { cwd: tempDir });
+        execSync(
+            `git push -f https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${owner}/${repo}.git HEAD:${publishedBranch}`,
+            { cwd: tempDir }
+        );
         console.log('Allure report deployed.');
 
+        // Add a summary link to the job
         if (ghPagesUrl) {
             const reportDirs = fs.readdirSync(tempDir, { withFileTypes: true })
                 .filter(dirent => dirent.isDirectory() && /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/.test(dirent.name))
                 .sort((a, b) => b.name.localeCompare(a.name));
+
             if (reportDirs.length > 0) {
                 const latestReport = reportDirs[0].name;
                 const reportUrl = `${ghPagesUrl.replace(/\/$/, '')}/${latestReport}/index.html`;

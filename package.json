@@ -1,7 +1,7 @@
 {
   "name": "allure-report-with-history",
   "version": "1.0.0",
-  "description": "GitHub Action to generate and deploy Allure reports with history",
+  "description": "GitHub Action to generate and publish Allure reports with historical data.",
   "main": "dist/index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist"
@@ -9,19 +9,12 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^6.0.1",
-    "allure-commandline": "^2.23.2",
-    "fs-extra": "^11.1.1"
+    "allure-commandline": "^2.27.0",
+    "fs-extra": "^11.2.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.36.1"
+    "@vercel/ncc": "^0.38.0"
   },
-  "keywords": [
-    "github-actions",
-    "allure",
-    "report",
-    "ci",
-    "cd"
-  ],
   "author": "Dmytro Velychko",
   "license": "MIT"
 }

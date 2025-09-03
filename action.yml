@@ -1,24 +1,29 @@
-name: 'Allure Report With History'
-description: 'Generate and deploy Allure reports with history for GitHub Actions.'
-author: 'velychkod'
-runs:
-  using: 'node16'
-  main: 'dist/index.js'
+name: "Allure Report with History"
+description: "Generate and deploy Allure reports with history to GitHub Pages or a custom branch."
+author: "Your Name"
+branding:
+  icon: "bar-chart-2"
+  color: "purple"
+
 inputs:
   allure-results-source:
-    description: 'Path or artifact where allure-results are located'
+    description: "Path to the directory containing allure-results"
     required: true
   published-reports-branch:
-    description: 'Branch to deploy the report and history'
+    description: "Branch where reports will be published (e.g., gh-pages)"
     required: true
   reports-to-keep:
-    description: 'Number of reports to keep. If 0, overwrite the branch.'
+    description: "Number of old reports to keep in history (0 to overwrite)"
     required: false
-    default: '20'
+    default: "20"
   generate-index-html-with-reports-history:
-    description: 'Whether to generate index.html with report history'
+    description: "Generate index.html with links to past reports"
     required: false
-    default: 'true'
+    default: "true"
   gh-pages-url:
-    description: 'Optional URL to the GitHub Pages site to link the report in run summary'
+    description: "URL of GitHub Pages site where the reports will be hosted"
     required: false
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
