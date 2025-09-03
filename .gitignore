@@ -1,0 +1,28 @@
+# Node.js dependencies
+package-lock.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary build directories
+temp-allure-reports/
+allure-report/
+allure-report-and-history/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional: ignore test result files if generated locally
+allure-results/
