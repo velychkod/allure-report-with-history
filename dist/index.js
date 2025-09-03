@@ -34602,25 +34602,19 @@ const tempDir = path.join(process.cwd(), 'temp-allure-reports');
 
 (async () => {
     try {
-        console.log('Detecting OS...');
         const isWindows = process.platform === 'win32';
-        console.log(`Running on ${isWindows ? 'Windows' : 'Linux/macOS'}`);
+		const allureBinary = path.join(__dirname, isWindows ? 'allure.bat' : 'allure');
 
-        // Resolve allure binary path
-        const allureBinary = isWindows
-            ? path.join(__dirname, 'dist', 'allure.bat')
-            : path.join(__dirname, 'dist', 'allure');
+		if (!fs.existsSync(allureBinary)) {
+			throw new Error(`Allure binary not found at expected path: ${allureBinary}`);
+		}
 
-        if (!fs.existsSync(allureBinary)) {
-            throw new Error(`Allure binary not found at expected path: ${allureBinary}`);
-        }
+		console.log(`Using Allure binary: ${allureBinary}`);
 
-        console.log(`Using Allure binary: ${allureBinary}`);
-
-        // Make sure Linux binary is executable
-        if (!isWindows) {
-            execSync(`chmod +x "${allureBinary}"`);
-        }
+		// Make sure Linux binary is executable
+		if (!isWindows) {
+			execSync(`chmod +x "${allureBinary}"`);
+		}
 
         // Generate Allure report
         console.log('Generating Allure report...');
