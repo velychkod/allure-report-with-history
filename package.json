@@ -1,0 +1,19 @@
+{
+  "name": "allure-report-with-history",
+  "version": "1.0.0",
+  "description": "GitHub Action to generate Allure report with history and deploy to branch",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.js -o dist"
+  },
+  "author": "velychkod",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "fs-extra": "^11.3.2"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.36.1"
+  }
+}

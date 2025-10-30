@@ -1,0 +1,4 @@
+node_modules/
+deploy-allure-reports/
+allure-report/
+*.log

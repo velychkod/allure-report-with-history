@@ -1,0 +1,35 @@
+﻿name: '📊 Allure Report with history'
+description: 'Generates Allure report and pushes it to a branch, preserving previous reports.'
+author: "velychkod"
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+inputs:
+  allure-results-path:
+    description: 'Path to the Allure results folder'
+    required: true
+  deploy-branch:
+    description: 'Branch to publish Allure reports'
+    required: true
+  reports-to-keep:
+    description: 'Number of reports to keep in archive'
+    required: false
+    default: '20'
+  gen-index:
+    description: 'Whether to generate index.html with links to previous reports'
+    required: false
+    default: 'true'
+  gh-pages-url:
+    description: 'Base URL where reports are hosted (for summary link)'
+    required: false
+  git-user-name:
+    description: 'Git user name for commits'
+    required: false
+    default: 'github-actions'
+  git-user-email:
+    description: 'Git user email for commits'
+    required: false
+    default: 'actions@github.com'
+  report-name:
+    description: 'Optional custom name for the report'
+    required: false
