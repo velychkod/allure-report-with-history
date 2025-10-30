@@ -60,4 +60,12 @@ jobs:
           gh-pages-url: 'https://username.github.io/repo-name'
           report-name: 'My Test Suite'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}```
+		  
+## 📸 Example Reports
+
+<p align="center">
+  <img src="assets/allure-report.png" alt="Allure Report Example" width="400" style="margin:10px;">
+  <img src="assets/allure-reports-branch.png" alt="Branch to publish Allure reports" width="400" style="margin:10px;">
+  <img src="assets/allure-reports-archive.png" alt="index.html with links to previous reports" width="400" style="margin:10px;">
+</p>
