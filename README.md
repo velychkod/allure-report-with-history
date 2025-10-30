@@ -25,7 +25,7 @@ This action allows you to keep a history of test reports, automatically generate
 | `gh-pages-url` | Base URL where reports are hosted | No | - |
 | `git-user-name` | Git user name for commits | No | `github-actions` |
 | `git-user-email` | Git user email for commits | No | `actions@github.com` |
-| `report-name` | Custom name for the report | No | `Allure Report YYYY-MM-DD_HH-MM-SS` |
+| `report-name` | Custom name for the report | No | `Allure Report MM/DD/YYYY` |
 
 
 ## Usage
@@ -60,8 +60,9 @@ jobs:
           gh-pages-url: 'https://username.github.io/repo-name'
           report-name: 'My Test Suite'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}```
-		  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ## 📸 Example Reports
 
 <p align="center">
