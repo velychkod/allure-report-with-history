@@ -1,5 +1,5 @@
 ﻿name: "Allure Report Publisher with History (GH Pages)"
-description: "Generates and deploys Allure reports to a specified branch while preserving history of previous reports."
+description: "Generates and deploys Allure reports to GitHub Pages with optional history retention and automatic index.html creation"
 author: "velychkod"
 
 branding:
@@ -46,3 +46,4 @@ inputs:
   report-name:
     description: "Optional custom name for the generated report"
     required: false
+
