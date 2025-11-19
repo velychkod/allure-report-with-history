@@ -1,35 +1,48 @@
-﻿name: '📊 Allure Report with history'
-description: 'Generates Allure report and pushes it to a branch, preserving previous reports.'
+﻿name: "Allure Report Publisher with History (GH Pages)"
+description: "Generates and deploys Allure reports to a specified branch while preserving history of previous reports."
 author: "velychkod"
+
+branding:
+  icon: "bar-chart"
+  color: "purple"
+
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"
+
 inputs:
   allure-results-path:
-    description: 'Path to the Allure results folder'
+    description: "Path to the Allure results folder"
     required: true
+
   deploy-branch:
-    description: 'Branch to publish Allure reports'
+    description: "Branch where Allure reports should be published (e.g., gh-pages)"
     required: true
+
   reports-to-keep:
-    description: 'Number of reports to keep in archive'
+    description: "How many previous reports to keep in history"
     required: false
-    default: '20'
+    default: "20"
+
   gen-index:
-    description: 'Whether to generate index.html with links to previous reports'
+    description: "Generate index.html with links to previous reports"
     required: false
-    default: 'true'
+    default: "true"
+
   gh-pages-url:
-    description: 'Base URL where reports are hosted (for summary link)'
+    description: "Base URL where reports are hosted (used for summary link generation)"
     required: false
+
   git-user-name:
-    description: 'Git user name for commits'
+    description: "Git user name used for commit history"
     required: false
-    default: 'github-actions'
+    default: "github-actions"
+
   git-user-email:
-    description: 'Git user email for commits'
+    description: "Git email used for commit history"
     required: false
-    default: 'actions@github.com'
+    default: "actions@github.com"
+
   report-name:
-    description: 'Optional custom name for the report'
+    description: "Optional custom name for the generated report"
     required: false
