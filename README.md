@@ -27,7 +27,7 @@ git checkout -b allure-reports
 git push origin allure-reports
 ```
 
-Or create a branch directly in the GitHub UI:
+Or **create a branch directly in the GitHub UI**:
 
 1. Go to your repository on GitHub.
 2. Click the branch selector dropdown and select **View all branches**.
