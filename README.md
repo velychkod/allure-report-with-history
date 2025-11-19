@@ -1,4 +1,4 @@
-﻿﻿# 📊 Allure Report with history
+## 📊 Allure Report with history
 
 A GitHub Action to **generate and deploy Allure reports** with optional history and `index.html` for GitHub Pages. It works on any platform (Windows/Linux) where Node.js is available.
 
